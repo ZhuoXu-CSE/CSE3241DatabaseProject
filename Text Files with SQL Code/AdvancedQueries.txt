@@ -1,0 +1,75 @@
+
+
+--a: Give a list of buyer names, along with the total dollar amount each buyer has spent.
+SELECT Name, sum(AmountPaid) AS TotalSpent
+FROM Buyer AS B, User AS U, AnOrder AS O
+WHERE BuyerID=U.UserID AND O.UserID=BuyerID
+GROUP BY BuyerID;
+
+
+
+--b: Give a list of buyer names and e-mail addresses for buyers who have spent more than the average buyer. 
+SELECT Name, U.Email
+FROM Buyer AS B, User AS U, AnOrder AS O
+WHERE BuyerID=U.UserID AND O.UserID=BuyerID
+GROUP BY BuyerID
+HAVING sum(amountPaid) >
+	(SELECT avg(TotalSpent) FROM (
+		SELECT Name, sum(AmountPaid) AS TotalSpent
+		FROM Buyer AS B, User AS U, AnOrder AS O
+		WHERE BuyerID=U.UserID AND O.UserID=BuyerID
+		GROUP BY BuyerID));
+
+
+--c: Give a list of the IP Item names and associated total copies sold to all buyers, sorted from the IP Item that has sold the most individual copies to the IP Item that has sold the least.
+SELECT ProductID, count(*)
+FROM AnOrder
+GROUP BY ProductID
+ORDER BY count(*) DESC;
+
+
+
+
+--d: Give a list of the IP Item names and associated dollar totals for copies sold to all buyers, sorted from the IP Item that has sold the highest dollar amount to the IP Item that has sold the smallest. 
+SELECT Product.ProductID, Title, SUM(Product.Price) as TotalDollarProfitsFromThisProduct
+FROM Product, AnOrder, User
+WHERE AnOrder.ProductId=Product.ProductId AND AnOrder.UserID=User.UserID
+GROUP BY Product.ProductID
+ORDER BY TotalDollarProfitsFromThisProduct DESC;
+
+
+--e: Find the most popular Seller (i.e. the one who has sold the most IP Items)  
+CREATE VIEW Temp (SellerID, ProductNum) AS SELECT Seller.SellerID, count(Seller.SellerID) FROM ((Seller JOIN Store ON Seller.SellerID = Store.SellerID) JOIN Product ON Store.StoreID = Product.StoreID) GROUP BY Seller.SellerID;
+SELECT SellerID FROM Temp WHERE ProductNum = (SELECT max(ProductNum) from TEMP);
+
+
+
+--f: Find the most profitable seller (i.e. the one who has brought in the most money) 
+Select MAX(TotalMadeByThisSeller), IdOfSeller, NameOfSeller 
+FROM 
+ (SELECT SUM(Product.Price) As TotalMadeByThisSeller,  User.UserID as IdOfSeller, User.Name AS NameOfSeller
+  FROM AnOrder, Product, Store, Seller, User
+  WHERE AnOrder.ProductId=Product.ProductID AND Product.StoreID=Store.StoreId AND Store.SellerId=Seller.SellerId AND Seller.SellerID=User.UserID
+  GROUP BY NameOfSeller);
+
+
+--g: Give a list of buyer names for buyers who purchased anything listed by the most profitable Seller. 
+SELECT DISTINCT(U.Name)
+FROM User AS U, Buyer AS B, AnOrder AS O, Product AS P, Store AS S, Seller
+WHERE B.BuyerID=U.UserID AND O.UserID=B.BuyerID AND O.ProductID=P.ProductID AND P.StoreID=S.StoreID AND Seller.SellerID=
+(SELECT IdOfSeller
+	FROM
+	(Select MAX(TotalMadeByThisSeller), IdOfSeller, NameOfSeller 
+	FROM 
+	(SELECT SUM(Product.Price) As TotalMadeByThisSeller,  User.UserID as IdOfSeller, User.Name AS NameOfSeller
+	FROM AnOrder, Product, Store, Seller, User
+	WHERE AnOrder.ProductId=Product.ProductID AND Product.StoreID=Store.StoreId AND Store.SellerId=Seller.SellerId AND Seller.SellerID=User.UserID
+	GROUP BY NameOfSeller)));
+
+
+
+--h: Give the list of sellers who listed the IP Items purchased by the buyers who have spent more than the average buyer.  
+CREATE VIEW AmountSpent (BuyerID, Amount) AS SELECT BuyerID, sum(AmountPaid) FROM (Buyer JOIN AnOrder ON BuyerID = UserID) GROUP BY BuyerID;
+CREATE VIEW BigBuyers (BuyerID) AS SELECT BuyerID FROM AmountSpent WHERE Amount > (SELECT avg(Amount) FROM AmountSpent);
+CREATE VIEW Purchases (ProductID) AS SELECT distinct Product.ProductID FROM ((BigBuyers JOIN AnOrder ON BigBuyers.BuyerID = AnOrder.UserID) JOIN Product ON AnOrder.ProductID = Product.ProductID);
+SELECT distinct Seller.SellerID FROM (((Purchases JOIN Product ON Purchases.ProductID = Product.ProductID) JOIN Store ON Product.StoreID = Store.StoreID) JOIN Seller ON Store.SellerID = Seller.SellerID);

@@ -1,0 +1,50 @@
+
+--a: Find the titles of all IP Items by Seller with name “fajf jaifja” that cost less than $10
+SELECT Product.Title 
+FROM Product, Store, Seller, User 
+WHERE Product.Price<10 AND Product.StoreID=Store.StoreID AND Store.SellerID = Seller.SellerID AND Seller.SellerID=User.UserID AND User.Name='fajf jaifja';
+
+
+
+--b: Give all names of items purchased and their dates of purchase made by a buyer with name 'fajf jaifja'
+SELECT Product.Title AS ProductPurchased, AnOrder.Date 
+FROM AnOrder, Product, User 
+WHERE AnOrder.ProductID=Product.ProductID AND AnOrder.UserID=User.UserID AND User.Name='fajf jaifja';
+
+
+
+--c: Find the seller names for all sellers with less than 5 IP Items for sale 
+SELECT User.Name as SellerName 
+FROM Product, Store, Seller, User 
+WHERE Product.Available='TRUE' AND Product.StoreID=Store.StoreID AND Store.SellerID=Seller.SellerID AND Seller.SellerID=User.UserID 
+GROUP BY SellerName 
+HAVING Count(SellerName) < 5; 
+ 
+
+
+--d: Give all the buyers who purchased a IP Item by a seller with name 'falf iejfla' and the names of the IP Items they purchased
+SELECT BuyerUser.Name AS NameOfBuyer, Product.title AS ProductPurchased 
+FROM AnOrder, Product, Store, Seller, User AS BuyerUser, User AS SellerUser 
+WHERE AnOrder.UserID=BuyerUser.UserID AND AnOrder.ProductID=Product.ProductID AND Product.StoreID=Store.StoreID AND Store.SellerID=Seller.SellerID AND Seller.SellerID=SellerUser.UserID AND SellerUser.Name='falf iejfla';
+ 
+
+
+
+--e: Find the total number of IP Items purchased by a buyer with name 'fajefai jfiajfl'
+SELECT Count(AnOrder.UserId) AS NumItemsPurchased 
+FROM AnOrder, User 
+WHERE AnOrder.UserID=User.UserID AND User.Name='fajefai jfiajfl';
+ 
+
+
+ 
+--f: Find the buyer who has purchased the most IP Items and the total number of IP Items they have purchased 	
+SELECT BuyerName, MAX(CT) AS NumItemsPurchased
+FROM 
+	(SELECT BuyerUser.Name AS BuyerName,   Count(AnOrder.UserID) as CT
+	FROM AnOrder, User as BuyerUser 
+	WHERE AnOrder.UserID = BuyerUser.UserID  
+	GROUP BY AnOrder.UserID);
+
+
+

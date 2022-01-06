@@ -1,0 +1,19 @@
+
+--a: Find the UserId and StoreId for all users, including users who don’t have a store
+SELECT U.UserID, S.StoreID
+FROM User AS U LEFT OUTER JOIN Store AS S ON U.UserID=S.SellerID;
+
+
+
+--b: Find the total price of items in the shopping cart for the User with UserId=3
+SELECT sum(P.price) as TotalPriceOfItemsInShoppingCart
+FROM User AS U, ShoppingCart AS SC, ShoppingCartProduct AS SCP, Product AS P
+WHERE U.UserID=3 AND U.UserID=SC.ShoppingCartID AND SC.ShoppingCartID=SCP.ShoppingCartID AND SCP.ProductID=P.ProductID;
+
+
+
+--c: Find the number of Items in the shopping cart for the User with UserId=3 
+SELECT count(*) as NumItemsInShoppingCart
+FROM User AS U, ShoppingCart AS SC, ShoppingCartProduct AS SCP, Product AS P
+WHERE U.UserID=3 AND U.UserID=SC.ShoppingCartID AND SC.ShoppingCartID=SCP.ShoppingCartID AND SCP.ProductID=P.ProductID;
+

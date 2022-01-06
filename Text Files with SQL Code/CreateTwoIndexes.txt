@@ -1,0 +1,7 @@
+
+-- Index 1: An index on the "File Type" column in the Product table 
+CREATE INDEX FileTypeIndex ON Product(FileType);
+
+
+-- Index 2: An index on the "Price" column in the Products table 
+CREATE INDEX PriceIndex ON Product(Price);

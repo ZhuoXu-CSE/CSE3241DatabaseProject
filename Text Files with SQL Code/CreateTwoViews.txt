@@ -1,0 +1,15 @@
+
+-- View 1: Shows all the Products for all the Stores, and the owner of each Store
+CREATE VIEW ProductsInStores AS
+	SELECT User.Name AS NameOfStoreOwner, Store.StoreID, Store.Name AS StoreName, ProductID, Title AS ProductTitle
+	FROM Store, Product, Seller, User 
+	WHERE Store.StoreID = Product.StoreID AND Store.SellerID=Seller.SellerID AND Seller.SellerID=User.UserId;
+
+
+
+-- View 2: Shows number of products purchased from each store
+CREATE VIEW ProductNum (StoreID, NumProducts) AS
+	SELECT S.StoreID, count(*) 
+	FROM Store AS S, Product AS P, AnOrder AS O
+	WHERE S.StoreID = P.StoreID AND P.ProductID = O.ProductID 
+	GROUP BY S.StoreID;
